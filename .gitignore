@@ -746,4 +746,3 @@ FodyWeavers.xsd
 my_settings.py
 .idea
 *.csv
-db_uploader.py
