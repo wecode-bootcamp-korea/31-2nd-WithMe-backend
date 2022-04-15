@@ -1,7 +1,5 @@
-from django.urls import path
-
-from users.views import KaKaoLoginView
+from django.urls import path,include
 
 urlpatterns = [
-    path('/signin',KaKaoLoginView.as_view()),
+    path('users',include('users.urls'))
 ]

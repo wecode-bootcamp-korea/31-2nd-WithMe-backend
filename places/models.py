@@ -1,6 +1,7 @@
 from django.db      import models
 from cores.models   import TimestampZone
 
+
 class Place(TimestampZone):
     title        = models.CharField(max_length=45)
     subtitle     = models.CharField(max_length=200)
@@ -12,7 +13,8 @@ class Place(TimestampZone):
     max_visitor  = models.IntegerField()
     image_url    = models.CharField(max_length=1000)
     close_date   = models.DateField()
-    status       = models.ForeignKey('Placestatus' , on_delete=models.CASCADE)
+    status       = models.ForeignKey('Placestatus', on_delete=models.CASCADE)
+    host         = models.ForeignKey('users.Host', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'places'
