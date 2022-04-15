@@ -13,7 +13,7 @@ class KaKaoLoginView(View):
         try:
             kakao_token = request.headers.get('Authorization')
 
-            kakao_user  = KakaoAPI(kakao_token)
+            kakao_user  = KakaoAPI(kakao_token).kakao_user()
             
         except KeyError: 
             return JsonResponse({'message' : 'Key error'}, status=400)  
