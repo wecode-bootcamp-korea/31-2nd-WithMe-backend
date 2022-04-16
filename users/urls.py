@@ -1,5 +1,7 @@
-from django.urls import path,include
+from django.urls import path
+
+from users.views import KakaoLoginView
 
 urlpatterns = [
-    path('users',include('users.urls'))
+    path('/signin',KakaoLoginView.as_view()),
 ]

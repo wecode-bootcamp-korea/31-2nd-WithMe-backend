@@ -17,5 +17,6 @@ class Host(TimestampZone):
     account      = models.CharField(max_length=45)
     introduction = models.TextField()
     user         = models.ForeignKey('User', on_delete=models.CASCADE)
+  
     class Meta:
         db_table = 'hosts'
