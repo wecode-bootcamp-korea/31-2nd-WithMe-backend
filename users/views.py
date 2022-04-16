@@ -1,13 +1,14 @@
-import jwt, datetime
-
-from json.decoder import JSONDecodeError
+import jwt, datetime, json
 
 from django.views import View
-from django.http  import JsonResponse
-from django.conf  import settings
+from django.http  import HttpResponse, JsonResponse
+from django.conf         import settings
 
-from users.models import User
-from users.kakao  import KakaoAPI
+from users.models        import User
+from places.models       import *
+
+from cores.decorator     import login_authorization
+from users.kakao         import KakaoAPI
 
 class KakaoLoginView(View):
     def get(self, request):
@@ -42,4 +43,40 @@ class KakaoLoginView(View):
             
         except KeyError: 
             return JsonResponse({'message' : 'Key error'}, status=400)      
+
+class MypageMainView(View):
+    @login_authorization
+    def get (self, request):
+        user = request.user
+ 
+        reservation_queryset = Reservation.objects.select_related('place').filter(user = user.id)
+
+        result = {
+            "nickname" : user.nickname,
+            "email"    : user.email,
+            "point"    : user.point,
+            "profile_image" : user.profile_image,
+            "reservation_list" : [{
+                "place_id" : reservation.place.id,
+                "title"       : reservation.place.title,
+                "sub_title"   : reservation.place.subtitle,
+                "image"       : reservation.place.image_url,
+                "running_date": reservation.place.running_date if reservation.place.running_date >= datetime.date.today() else "is_closed",
+                "location"    : reservation.place.location
+            }for reservation in reservation_queryset]
+        }
+        
+        return JsonResponse({'result':result}, status = 200)
+
+    @login_authorization
+    def post(self, request):
+        user = request.user
+        data = json.loads(request.body)
+        res = Reservation.objects.get(place_id = data['place_id'], user_id = user.id)
+        res.delete()
+        price = Place.objects.get(id = data['place_id']).price
+        user.point += price
+        user.save()
+        
+        return HttpResponse(status=200)
 
