@@ -8,9 +8,6 @@ class KakaoAPI:
 
     def kakao_user(self):
         headers     = {'Authorization' : f'Bearer {self.kakao_token}'}
-        response = requests.get(self.user_url, headers=headers, timeout=3)
-
-        if not response.status_code == 200: 
-            return JsonResponse({'message' : 'Invalid token'}, status=401)
-
-        return response.json()
+        response = requests.get(self.user_url, headers=headers, timeout=3).json()
+        
+        return response
