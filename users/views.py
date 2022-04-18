@@ -1,6 +1,4 @@
-import jwt, datetime
-
-from json.decoder import JSONDecodeError
+import jwt, datetime,json
 
 from django.views import View
 from django.http  import JsonResponse
@@ -8,6 +6,8 @@ from django.conf  import settings
 
 from users.models import User
 from users.kakao  import KakaoAPI
+
+from cores.decorator     import login_authorization
 
 class KakaoLoginView(View):
     def get(self, request):
@@ -43,3 +43,20 @@ class KakaoLoginView(View):
         except KeyError: 
             return JsonResponse({'message' : 'Key error'}, status=400)      
 
+class PointChargeView(View):
+    @login_authorization
+    def post(self, request):
+        try:
+            user = request.user
+            data = json.loads(request.body)
+            point = data['point']
+            user.point += abs(int(point))
+            user.save()
+
+            return JsonResponse({'point':user.point} ,status = 200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'Key error'}, status=400)     
+
+        except ValueError:
+            return JsonResponse({'message' : 'Value Error'}, status=401) 
