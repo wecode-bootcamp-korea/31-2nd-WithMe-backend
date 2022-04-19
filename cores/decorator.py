@@ -8,16 +8,11 @@ def login_authorization(func):
     def wrapper(self,request,*args,**kargs):
         try:
             access_token = request.headers.get('Authorization')
-            
             payload      = jwt.decode(access_token, settings.SECRET_KEY, settings.ALGORITHM)
-            user = User.objects.get(id = payload['user_id'])
-            request.user = user
+            request.user = User.objects.get(id = payload['user_id'])
+            
             return func(self, request, *args, **kargs)
         
-
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({"message": "EXPIRED_TOKEN"}, status = 400)
-
         except jwt.exceptions.DecodeError:
             return JsonResponse({'message' : 'Invalid token'}, status=400)
 
