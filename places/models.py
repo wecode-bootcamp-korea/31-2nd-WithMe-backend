@@ -13,6 +13,8 @@ class Place(TimestampZone):
     max_visitor  = models.IntegerField()
     image_url    = models.CharField(max_length=1000)
     close_date   = models.DateField()
+    latitude     = models.DecimalField(max_digits=18,decimal_places=10)
+    longitude    = models.DecimalField(max_digits=18,decimal_places=10)
     status       = models.ForeignKey('Placestatus', on_delete=models.CASCADE)
     host         = models.ForeignKey('users.Host', on_delete=models.CASCADE)
 
