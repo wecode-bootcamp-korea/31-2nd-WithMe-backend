@@ -146,6 +146,8 @@ class MypageMainTest(TestCase):
             max_visitor  = 4,
             image_url    = "test.jpg",
             close_date   = "2022-03-03",
+            latitude=36.0076820000,
+            longitude=129.3332720000,
             status_id    = 1,
             host_id      = 1,
         )
