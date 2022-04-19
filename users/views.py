@@ -1,11 +1,15 @@
-import jwt, datetime
+import jwt, datetime, json
 
 from django.views import View
-from django.http  import JsonResponse
-from django.conf  import settings
+from django.http  import HttpResponse, JsonResponse
+from django.conf         import settings
 
-from users.models import User
-from users.kakao  import KakaoAPI
+from users.models        import User
+from users.kakao         import KakaoAPI
+from places.models       import *
+
+from cores.decorator     import login_authorization
+
 
 from cores.decorator    import login_authorization
 
@@ -56,3 +60,39 @@ class UserInfomation(View):
             }
             
         return JsonResponse({'user_info' : user_info}, status = 200)
+
+class ReservationView(View):
+    @login_authorization
+    def get (self, request):
+        user = request.user
+ 
+        reservation_queryset = Reservation.objects.select_related('place').filter(user = user)
+
+        reservation_list = [{
+            "place_id" : reservation.place.id,
+            "title"       : reservation.place.title,
+            "sub_title"   : reservation.place.subtitle,
+            "image"       : reservation.place.image_url,
+            "running_date": reservation.place.running_date if reservation.place.running_date >= datetime.date.today() else  f"{reservation.place.running_date} is_closed",
+            "location"    : reservation.place.location
+        }for reservation in reservation_queryset]
+        
+        return JsonResponse({'reservation_list':reservation_list}, status = 200)
+
+    @login_authorization
+    def post(self, request):
+        user = request.user
+        data = json.loads(request.body)
+        res = Reservation.objects.get(place_id = data['place_id'], user_id = user.id)
+
+        if res.place.running_date <= datetime.date.today():
+            return JsonResponse({"message" : "Reservations already used"}, status = 401)
+
+        res.delete()
+
+        price = Place.objects.get(id = data['place_id']).price
+        user.point += price
+        user.save()
+        
+        return HttpResponse(status=200)
+
