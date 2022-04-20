@@ -2,7 +2,7 @@ from django.views import View
 from django.http import JsonResponse
 from datetime import datetime
 
-from places.models import Place
+from places.models import Place, Review
 
 
 class PlaceInformationView(View):
@@ -66,4 +66,20 @@ class MainPlaceListView(View):
 
         return JsonResponse({'create_time': result, 'low_price': second_result,
                              'running_date': third_result}, status=200)
+
+
+class PlaceReviewListView(View):
+    def get(self, request, place_id):
+        try:
+            place = Place.objects.get(id=place_id)
+
+            result = [{
+                        'nickname'     : review.user.nickname,
+                        'content'      : review.content,
+                        'running_date' : place.running_date,
+                    } for review in Review.objects.filter(place_id=place_id)]
+            return JsonResponse({'result': result}, status=200)
+
+        except Place.DoesNotExist:
+            return JsonResponse({'message': 'Place does not exit'}, status=404)
 
