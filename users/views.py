@@ -77,13 +77,29 @@ class ReservationView(View):
         
         return JsonResponse({'reservation_list':reservation_list}, status = 200)
 
+    @login_authorization
+    def post(self, request):
+        user = request.user
+        data = json.loads(request.body)
+        res = Reservation.objects.get(place_id = data['place_id'], user_id = user.id)
+
+        if res.place.running_date <= datetime.date.today():
+            return JsonResponse({"message" : "Reservations already used"}, status = 401)
+
+        res.delete()
+
+        price = Place.objects.get(id = data['place_id']).price
+        user.point += price
+        user.save()
         
+        return HttpResponse(status=200)
+
 class ReviewView(View):
     @login_authorization
     def post(self, request):
         user = request.user
         data = json.loads(request.body)
-        
+
         review , state = Review.objects.get_or_create(
             user_id  = user.id,
             place_id = Place.objects.get(title = data['title']).id,
@@ -165,3 +181,4 @@ class HostView(View):
 
         except KeyError:
             return JsonResponse({'message':'Key_error'}, status=400)
+        
