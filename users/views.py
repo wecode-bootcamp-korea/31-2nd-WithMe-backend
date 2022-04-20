@@ -6,6 +6,7 @@ from django.db.models import Q
 from users.models        import User,Host
 from places.models       import *
 from django.conf         import settings
+from cores.decorator     import login_authorization
 from users.kakao         import KakaoAPI
 
 from cores.decorator    import login_authorization
@@ -117,3 +118,21 @@ class ReviewView(View):
         }for reservation in reservation_queryset]
 
         return JsonResponse({'review' : result}, status = 200)
+
+class PointChargeView(View):
+    @login_authorization
+    def post(self, request):
+        try:
+            user = request.user
+            data = json.loads(request.body)
+            point = data['point']
+            user.point += abs(int(point))
+            user.save()
+
+            return JsonResponse({'point':user.point} ,status = 200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'Key error'}, status=400)     
+
+        except ValueError:
+            return JsonResponse({'message' : 'Value Error'}, status=401) 

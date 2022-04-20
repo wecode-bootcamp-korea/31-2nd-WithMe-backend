@@ -12,7 +12,10 @@ def login_authorization(func):
             request.user = User.objects.get(id = payload['user_id'])
             
             return func(self, request, *args, **kargs)
-        
+
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({"message": "EXPIRED_TOKEN"}, status = 400)
+            
         except jwt.exceptions.DecodeError:
             return JsonResponse({'message' : 'Invalid token'}, status=400)
 
