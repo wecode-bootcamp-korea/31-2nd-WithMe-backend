@@ -1,15 +1,19 @@
-import jwt, datetime, json
-from django.views import View
-from django.http  import HttpResponse, JsonResponse
-from django.db.models import Q
+import jwt, datetime, json, boto3, uuid
+
+from withme.settings     import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_REGION
+
+from django.views        import View
+from django.http         import HttpResponse, JsonResponse
+from django.db.models    import Q
 
 from users.models        import User,Host
 from places.models       import *
 from django.conf         import settings
 from cores.decorator     import login_authorization
+from cores.imagehandler  import ImageHandler
 from users.kakao         import KakaoAPI
 
-from cores.decorator    import login_authorization
+from cores.decorator     import login_authorization
 
 class KakaoLoginView(View):
     def get(self, request):
@@ -181,4 +185,53 @@ class HostView(View):
 
         except KeyError:
             return JsonResponse({'message':'Key_error'}, status=400)
-        
+
+boto3_client = boto3.client(
+    's3',
+    aws_access_key_id     = AWS_ACCESS_KEY_ID,
+    aws_secret_access_key = AWS_SECRET_ACCESS_KEY
+)
+
+class PlaceRegisterView(View):
+    @login_authorization
+    def post(self, request):
+        try:
+            image_handler = ImageHandler(boto3_client, AWS_STORAGE_BUCKET_NAME, AWS_REGION)
+            post          = request.POST
+            user          = request.user
+            place_img     = request.FILES['place_img']
+
+            running_date  = datetime.datetime.strptime(post['running_date'], '%Y-%m-%d')
+            close_date    = datetime.datetime.strptime(post['close_date'], '%Y-%m-%d')
+
+            if running_date < datetime.datetime.today():
+                return JsonResponse({'message':'Invalid_running_date'}, status=400)
+
+            if close_date < datetime.datetime.today():
+                return JsonResponse({'message':'Invalid_close_date'}, status=400)
+
+            if not Host.objects.filter(user=user).exists():
+                return JsonResponse({'message':'Invalid_host'}, status=401)
+
+            Place.objects.create(
+                title        = post['title'],
+                image_url    = image_handler.upload_file(place_img),
+                location     = post['location'],
+                subtitle     = post['subtitle'],
+                price        = post['price'],
+                running_date = post['running_date'],
+                running_time = post['running_time'],
+                max_visitor  = post['max_visitor'],
+                preparation  = post['preparation'],
+                close_date   = post['close_date'],
+                latitude     = post['latitude'],
+                longitude    = post['longitude'],
+                status       = PlaceStatus.objects.get(id=2),
+                host         = Host.objects.get(user = user)
+            )
+
+            return JsonResponse({'message':'Success'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message':'Key_error'}, status=400)
+

@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 from my_settings import SECRET_KEY, DATABASES, ALGORITHM
-import pymysql
+import pymysql, os
 
 pymysql.install_as_MySQLdb()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -174,3 +174,10 @@ CORS_ALLOW_HEADERS = (
 #         },
 #     },
 # }
+
+# AWS S3
+
+AWS_ACCESS_KEY_ID       = os.environ['AWSAccessKeyId']
+AWS_SECRET_ACCESS_KEY   = os.environ['AWSSecretKey']
+AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
+AWS_REGION              = os.environ['AWS_REGION']
