@@ -136,3 +136,32 @@ class PointChargeView(View):
 
         except ValueError:
             return JsonResponse({'message' : 'Value Error'}, status=401) 
+
+class HostView(View):
+    @login_authorization
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            user = request.user
+
+            hosts, created = Host.objects.update_or_create(
+                user     = user,
+                defaults = {
+                    'introduction' : data['introduction'],
+                    'bank'         : data['bank'],
+                    'account'      : data['account']
+                }
+            )
+
+            if not created:
+                hosts.introduction = data['introduction']
+                hosts.bank = data['bank']
+                hosts.account = data['account']
+                hosts.save()
+            
+            status = 201 if created else 200
+
+            return JsonResponse({'message':'Success'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message':'Key_error'}, status=400)
