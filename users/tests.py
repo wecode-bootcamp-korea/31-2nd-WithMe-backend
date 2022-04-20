@@ -100,7 +100,7 @@ class KakaoSignInTest(TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), {'message' : 'Invalid token'})
 
-class MypageMainTest(TestCase):
+class MypageTest(TestCase):
     def setUp(self):
         User.objects.bulk_create([
             User( 
@@ -191,6 +191,7 @@ class MypageMainTest(TestCase):
         PlaceStatus.objects.all().delete()
         Host.objects.all().delete()
 
+
     @patch('users.views')
     def test_reservation_get_success(self,mocked_requests):
         client = Client()
@@ -239,6 +240,28 @@ class MypageMainTest(TestCase):
         response = client.post("/users/reservation",json.dumps(data),content_type='application/json' ,**headers)
         self.assertEqual(response.status_code, 200)
         
+    def test_review_post_key_error(self, mocked_requests):
+        client = Client()
+        
+        data = {
+            "title" : 'test',
+            "review" : ''
+        }
+
+        token    = jwt.encode({'user_id':1}, settings.SECRET_KEY, settings.ALGORITHM)
+        headers = {"HTTP_Authorization" : token}
+        
+        response = client.post("/users/review", json.dumps(data), content_type='application/json', **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'message' : 'Key error'})
 
 
-   
+    @patch('users.views')
+    def test_review_get_success(self, mocked_requests):
+        client = Client()
+        
+        token    = jwt.encode({'user_id':1}, settings.SECRET_KEY, settings.ALGORITHM)
+        headers = {"HTTP_Authorization" : token}
+        
+        response = client.get("/users/review",**headers)
+        self.assertEqual(response.status_code, 200)
