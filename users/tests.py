@@ -20,6 +20,7 @@ class KakaoSignInTest(TestCase):
     def tearDown(self):
         User.objects.all().delete()
     
+class SignInTest(TestCase):
     @patch('users.kakao.requests')
     def test_kakao_signin_view_get_success(self, mocked_requests):
             client = Client()
@@ -193,8 +194,39 @@ class MypageTest(TestCase):
 
 
     @patch('users.views')
-    def test_reservation_get_success(self,mocked_requests):
+    def test_mypage_main_get_success(self,mocked_requests):
         client = Client()
+        class MockedResponse:
+            data = {
+                'nickname'     : "test",
+                'email'        : "test@gmail.com",
+                'profile_image': "https://ifh.123123/g/ElNIU1.jpg",
+                'point'        : "0"
+            }
+        mocked_requests.get = MagicMock(return_value = MockedResponse())
+        token    = jwt.encode({'user_id':1},settings.SECRET_KEY, settings.ALGORITHM)
+        headers = {"HTTP_Authorization" : token}
+        
+        response = client.get("/users/mypage", **headers)
+        self.assertEqual(response.status_code, 200)
+
+    @patch('users.views')
+    def test_mypage_main_post_success(self,mocked_requests):
+        client = Client()
+
+        data = {
+            "place_id": 1
+        }
+
+        token    = jwt.encode({'user_id':2},settings.SECRET_KEY, settings.ALGORITHM)
+        headers = {"HTTP_Authorization" : token}
+        
+        response = client.post("/users/mypage",json.dumps(data),content_type='application/json' ,**headers)
+        self.assertEqual(response.status_code, 200)
+        
+    def test_point_charge_post_success(self, mocked_requests):
+        client = Client()
+        
         class MockedResponse:
             data = {
                 'nickname'     : "test",

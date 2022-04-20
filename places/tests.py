@@ -44,6 +44,8 @@ class PlaceInformationTest(TestCase):
             running_date='2022-04-01',
             location='포항',
             preparation='닌텐도 스위치',
+            latitude     = 36.0076820000,
+            longitude    = 129.3332720000,
             max_visitor=10,
             image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/andrew-varnum-uNKyYp616wo-unsplash.jpg',
             close_date='2022-03-25',
