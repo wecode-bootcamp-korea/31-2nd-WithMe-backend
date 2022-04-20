@@ -297,3 +297,5 @@ class MypageTest(TestCase):
         
         response = client.get("/users/review",**headers)
         self.assertEqual(response.status_code, 200)
+
+# class PlaceRegisterTest(TestCase):
