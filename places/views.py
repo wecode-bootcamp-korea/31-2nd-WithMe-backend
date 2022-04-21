@@ -1,6 +1,8 @@
 from django.views import View
 from django.http import JsonResponse
 from datetime import datetime
+from django.db.models import Q
+
 
 from places.models import Place, Review
 from users.models import Host
@@ -102,3 +104,24 @@ class PlaceHostInformationView(View):
         except Place.DoesNotExist:
             return JsonResponse({'message': 'Place does not exit'}, status=404)
 
+
+class PlaceSearchView(View):
+    def get(self, request):
+        word = request.GET.get('k', None)
+
+        q = Q()
+
+        if word:
+            q &= Q(title__icontains=word)
+
+        places = Place.objects.filter(q)
+
+        result = [{
+            'id'       : place.id,
+            'img_url'  : place.image_url,
+            'title'    : place.title,
+            'subtitle' : place.subtitle,
+            'location' : place.location,
+            'price'    : place.price
+        }for place in places]
+        return JsonResponse({'result': result}, status=200)
