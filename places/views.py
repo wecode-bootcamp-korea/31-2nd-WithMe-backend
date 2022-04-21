@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from datetime import datetime
 
 from places.models import Place, Review
+from users.models import Host
+from cores.decorator import login_authorization
 
 
 class PlaceInformationView(View):
@@ -78,6 +80,23 @@ class PlaceReviewListView(View):
                         'content'      : review.content,
                         'running_date' : place.running_date,
                     } for review in Review.objects.filter(place_id=place_id)]
+            return JsonResponse({'result': result}, status=200)
+
+        except Place.DoesNotExist:
+            return JsonResponse({'message': 'Place does not exit'}, status=404)
+
+
+class PlaceHostInformationView(View):
+    @login_authorization
+    def get(self, request):
+        try:
+            user = request.user
+            host = Host.objects.select_related('user').get(user_id=user.id)
+            result = {
+                    'host_nickname'      : host.user.nickname,
+                    'host_profile_image' : host.user.profile_image,
+                    'host_introduction'  : host.introduction
+            }
             return JsonResponse({'result': result}, status=200)
 
         except Place.DoesNotExist:
