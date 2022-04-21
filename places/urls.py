@@ -1,7 +1,7 @@
 from django.urls import path
 
 from places.views import PlaceInformationView, MainPlaceListView, PlaceReviewListView, PlaceHostInformationView, \
-                                                                  PlaceSearchView, HostResistPlaceList
+                                                                  PlaceSearchView, HostResistPlaceList, PlaceReservation
 
 urlpatterns = [
     path('/placeinformation/<int:place_id>', PlaceInformationView.as_view()),
@@ -10,5 +10,6 @@ urlpatterns = [
     path('/placehostinformation', PlaceHostInformationView.as_view()),
     path('/search', PlaceSearchView.as_view()),
     path('/<int:place_id>/hostinformation', PlaceHostInformationView.as_view()),
-    path('/hostregstlist', HostResistPlaceList.as_view())
+    path('/hostregstlist', HostResistPlaceList.as_view()),
+    path('/reservation', PlaceReservation.as_view())
 ]
