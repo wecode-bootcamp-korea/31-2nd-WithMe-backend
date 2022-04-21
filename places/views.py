@@ -1,10 +1,12 @@
+import json
+
 from django.views import View
 from django.http import JsonResponse
 from datetime import datetime
 from django.db.models import Q
 
 
-from places.models import Place, Review
+from places.models import Place, Review, Reservation
 from users.models import Host
 from cores.decorator import login_authorization
 
@@ -154,3 +156,32 @@ class HostResistPlaceList(View):
 
         except AttributeError:
             return JsonResponse({'message': 'None host'}, status=403)
+
+class PlaceReservation(View):
+    @login_authorization
+    def post(self, request):
+        try:
+            data     = json.loads(request.body)
+            user     = request.user
+            place_id = data['place_id']
+            place    = Place.objects.get(id=place_id)
+
+            if Host.objects.get(user_id=user.id).id == place.host_id:
+                return JsonResponse({'message': 'You are host'}, status=400)
+
+            if Reservation.objects.filter(user_id=user.id, place_id=place_id, place__close_date__gte=datetime.now())\
+                                                                                                           .exists():
+                return JsonResponse({'message': 'Already exist room'}, status=400)
+
+            if user.point < place.price:
+                return JsonResponse({'message': 'Not enough point'}, status=400)
+            Reservation.objects.create(
+                place_id = place_id,
+                user_id  = user.id
+            )
+            user.point -= Place.objects.get(id=place_id).price
+            user.save()
+            return JsonResponse({'message': 'Success'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message': 'Key error'}, status=400)
