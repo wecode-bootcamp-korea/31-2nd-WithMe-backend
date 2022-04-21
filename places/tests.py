@@ -81,6 +81,8 @@ class PlaceInformationTest(TestCase):
                     'running_time' : place.running_time,
                     'price'        : str(place.price),
                     'preparation'  : place.preparation,
+                    'latitude': place.latitude,
+                    'longitude': place.longitude
                     }
                 }
             )

@@ -23,6 +23,8 @@ class PlaceInformationView(View):
                 'running_time' : place.running_time,
                 'price'        : place.price,
                 'preparation'  : place.preparation,
+                'latitude'     : place.latitude,
+                'longitude'    : place.longitude
             }
             return JsonResponse({'result': result}, status=200)
 
