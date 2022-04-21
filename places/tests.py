@@ -639,22 +639,19 @@ class PlaceHostInformationTest(TestCase):
         Host.objects.all().delete()
         Place.objects.all().delete()
 
-    def test_success_place_Host_information_with_get_method(self):
-        user = User.objects.get(id=1)
-        token = jwt.encode({'user_id': user.id}, settings.SECRET_KEY, settings.ALGORITHM)
-        headers = {'HTTP_Authorization': token}
+    def test_success_place_Host_information_with_get_method(self, place_id=1):
         client   = Client()
-        response = client.get(f'/places/placehostinformation', **headers)
+        response = client.get(f'/places/{place_id}/hostinformation')
 
-        host = Host.objects.select_related('user').get(user_id=user.id)
+        place = Place.objects.select_related('host').get(id=place_id)
 
         self.assertEqual(response.json(), {
                         'result': {
-                            'host_nickname'      : host.user.nickname,
-                            'host_profile_image' : host.user.profile_image,
-                            'host_introduction'  : host.introduction
+                            'host_nickname'      : place.host.user.nickname,
+                            'host_profile_image' : place.host.user.profile_image,
+                            'host_introduction'  : place.host.introduction
+                             }
                         }
-                    }
                 )
         self.assertEqual(response.status_code, 200)
 

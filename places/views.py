@@ -5,8 +5,6 @@ from django.db.models import Q
 
 
 from places.models import Place, Review
-from users.models import Host
-from cores.decorator import login_authorization
 
 
 class PlaceInformationView(View):
@@ -89,15 +87,14 @@ class PlaceReviewListView(View):
 
 
 class PlaceHostInformationView(View):
-    @login_authorization
-    def get(self, request):
+    def get(self, request, place_id):
         try:
-            user = request.user
-            host = Host.objects.select_related('user').get(user_id=user.id)
+
+            place = Place.objects.select_related('host').get(id=place_id)
             result = {
-                    'host_nickname'      : host.user.nickname,
-                    'host_profile_image' : host.user.profile_image,
-                    'host_introduction'  : host.introduction
+                    'host_nickname'      : place.host.user.nickname,
+                    'host_profile_image' : place.host.user.profile_image,
+                    'host_introduction'  : place.host.introduction
             }
             return JsonResponse({'result': result}, status=200)
 
