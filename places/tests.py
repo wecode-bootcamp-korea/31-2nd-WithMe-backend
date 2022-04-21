@@ -2,6 +2,7 @@ import jwt
 
 from django.test import TestCase, Client
 from datetime import datetime
+from django.db.models import Q
 
 from places.models import Place, PlaceStatus, Review
 from users.models import User, Host
@@ -656,3 +657,84 @@ class PlaceHostInformationTest(TestCase):
                     }
                 )
         self.assertEqual(response.status_code, 200)
+
+
+class PlaceSearchTest(TestCase):
+    def setUp(self):
+        User.objects.create(
+            id=1,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            nickname='이산',
+            email='dltks@gmail.com',
+            social_id=1,
+            profile_image='asdfasdf1',
+            point=90500.00
+        )
+
+        PlaceStatus.objects.create(
+            id=2,
+            status=True
+        )
+
+        Host.objects.create(
+            id=2,
+            created_at='2022-14-15',
+            updated_at='2022-14-15',
+            bank='',
+            account='1111-1111-1111',
+            introduction='안녕',
+            user_id=1
+        )
+
+        Place.objects.create(
+            id=3,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='JihunPark과 함께하는 스텐드 코미디',
+            subtitle='여러분의 1시간 재미 보장합니다',
+            price=3000.00,
+            running_time=1,
+            running_date='2022-07-21',
+            location='신사',
+            preparation='물감,스케치북, 도화지',
+            max_visitor=500,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/artem-bryzgalov-RdZTQhQuQdE-unsplash.jpg',
+            close_date='2022-07-14',
+            latitude=1,
+            longitude=1,
+            host_id=2,
+            status_id=2
+            )
+
+    def tearDown(self):
+        User.objects.all().delete()
+        PlaceStatus.objects.all().delete()
+        Host.objects.all().delete()
+        Place.objects.all().delete()
+
+    def test_success_places_search_with_get_method(self, k='로컬'):
+        client = Client()
+        response = client.get(f'/places/search?k={k}')
+
+        q = Q()
+
+        if k:
+            q &= Q(title__icontains=k)
+
+        places = Place.objects.filter(q)
+
+        self.assertEqual(response.json(), {
+                            'result' : [{
+                                'id': place.id,
+                                'img_url': place.image_url,
+                                'title': place.title,
+                                'subtitle': place.subtitle,
+                                'location': place.location,
+                                'price': place.price
+                            }for place in places]
+                        }
+                    )
+
+        self.assertEqual(response.status_code, 200)
+
