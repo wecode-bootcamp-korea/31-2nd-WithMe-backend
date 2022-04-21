@@ -2,9 +2,9 @@ import jwt
 
 from django.test import TestCase, Client
 from datetime import datetime
-from django.db.models import Q
+from django.db.models import Q, F, Count
 
-from places.models import Place, PlaceStatus, Review
+from places.models import Place, PlaceStatus, Reservation, Review
 from users.models import User, Host
 from withme import settings
 
@@ -112,6 +112,429 @@ class MainPlaceListTest(TestCase):
             profile_image='http://k.kakaocdn.net/dn/dpk9l1/btqmGhA2lKL/Oz0wDuJn1YV2DIn92f6DVK/img_640x640.jpg',
             point=90500.00
         )
+
+
+class PlaceListTest(TestCase):
+    def setUp(self):
+        User.objects.create(
+            id=1,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            nickname='이산',
+            email='dltks@gmail.com',
+            social_id=1,
+            profile_image='asdfasdf1',
+            point=90500.00
+        )
+
+        User.objects.create(
+            id=2,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            nickname='정현',
+            email='wjdgus@gmail.com',
+            social_id=2,
+            profile_image='asdfasdf2',
+            point=200000.00
+        )
+
+        User.objects.create(
+            id=3,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            nickname='경서',
+            email='riudtj@gmail.com',
+            social_id=3,
+            profile_image='asdfasdf3',
+            point=300000.00
+        )
+
+        PlaceStatus.objects.create(
+            id=1,
+            status=False
+        )
+
+        PlaceStatus.objects.create(
+            id=2,
+            status=True
+        )
+
+        Host.objects.create(
+            id=1,
+            created_at='2022-14-15',
+            updated_at='2022-14-15',
+            bank='루비',
+            account='1111-1111-1112',
+            introduction='안녕',
+            user_id=2
+        )
+
+        Host.objects.create(
+            id=2,
+            created_at='2022-14-15',
+            updated_at='2022-14-15',
+            bank='',
+            account='1111-1111-1111',
+            introduction='안녕',
+            user_id=1
+        )
+
+        Place.objects.create(
+            id=1,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='로컨 에너테인먼트의 모든것',
+            subtitle='집에서 만끽하는 편안함',
+            price=25000.00,
+            running_time=2,
+            running_date='2022-04-01',
+            location='포항',
+            preparation='닌텐도 스위치',
+            max_visitor=10,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/andrew-varnum-uNKyYp616wo-unsplash.jpg',
+            close_date='2022-03-25',
+            host_id=1,
+            status_id=1
+        )
+
+        Place.objects.create(
+            id=2,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='포항의 밥 누나 경서님과 쉽게 그리는 미술',
+            subtitle='야! 너두 미술 할수있어',
+            price=100000.00,
+            running_time=3,
+            running_date='2022-05-21',
+            location='제주도',
+            preparation='물감,스케치북, 도화지',
+            max_visitor=1,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/ankhesenamun-KitGM-GDgOI-unsplash.jpg',
+            close_date='2022-05-14',
+            host_id=2,
+            status_id=2
+        )
+
+        Place.objects.create(
+            id=3,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='JihunPark과 함께하는 스텐드 코미디',
+            subtitle='여러분의 1시간 재미 보장합니다',
+            price=3000.00,
+            running_time=1,
+            running_date='2022-07-21',
+            location='신사',
+            preparation='물감,스케치북, 도화지',
+            max_visitor=500,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/artem-bryzgalov-RdZTQhQuQdE-unsplash.jpg',
+            close_date='2022-07-14',
+            host_id=2,
+            status_id=2
+        )
+
+        Place.objects.create(
+            id=4,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='혹시 고민 많은 당신 대화 할까요?',
+            subtitle='당신의 눈동자에 cheers~',
+            price=45000.00,
+            running_time=3,
+            running_date='2022-10-08',
+            location='강남역',
+            preparation='취하지 않을 정신',
+            max_visitor=1,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/carson-masterson-yuxr5ohFB-g-unsplash.jpg',
+            close_date='2022-10-01',
+            host_id=2,
+            status_id=2
+        )
+
+        Place.objects.create(
+            id=5,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='혹맥주에 매력에 빠져볼까요?',
+            subtitle='힘든 시기 같이 맥주 먹으면 서 이야기 할까요?',
+            price=3500.00,
+            running_time=1,
+            running_date='2022-05-22',
+            location='익산',
+            preparation='빠른 맥주마시기',
+            max_visitor=100,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/christin-hume-08tX2fsuSLg-unsplash.jpg',
+            close_date='2022-05-15',
+            host_id=2,
+            status_id=2
+        )
+
+        Place.objects.create(
+            id=6,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='이길거란 희망...',
+            subtitle='혼자 놀기 심심하셨죠? 같이 놀아요',
+            price=10000.00,
+            running_time=2,
+            running_date='2022-12-21',
+            location='선릉역 4번출구',
+            preparation='몸만 오시면 됩니다^^',
+            max_visitor=5,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/dayne-topkin-xTmqoidRoKQ-unsplash.jpg',
+            close_date='2022-12-14',
+            host_id=2,
+            status_id=2
+        )
+
+        Place.objects.create(
+            id=7,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='화려한 조명이 나를 감싸네',
+            subtitle='센빠이 광수와 함께하는 늦은오후 티타임',
+            price=20000.00,
+            running_time=1,
+            running_date='2022-06-21',
+            location='강남역 11번출구',
+            preparation='센커피, 노트북, 핸드폰',
+            max_visitor=6,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/dimitris-chapsoulas-MI4QbY979hM-unsplash.jpg',
+            close_date='2022-06-14',
+            host_id=2,
+            status_id=2
+        )
+
+        Place.objects.create(
+            id=9,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='야 너도 노래할수 있어',
+            subtitle='4집가수 산님 과 함께하는 즐거운 보컬 트레이닝',
+            price=70000.00,
+            running_time=2,
+            running_date='2022-07-31',
+            location='관악구 봉천동',
+            preparation='목소리',
+            max_visitor=2,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/gordon-cowie-3ecKARVRbis-unsplash.jpg',
+            close_date='2022-07-24',
+            host_id=2,
+            status_id=2
+        )
+
+        Place.objects.create(
+            id=10,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='오싹한 방탈출',
+            subtitle='과연 한시간안에 나갈수있을거 같아?',
+            price=19000.00,
+            running_time=1,
+            running_date='2022-03-10',
+            location='강남역 10번출구',
+            preparation='smart한 두뇌, 도망가지않을 담력',
+            max_visitor=2,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/gryffyn-m-K07OmIlzo90-unsplash.jpg',
+            close_date='2022-03-03',
+            host_id=1,
+            status_id=1
+        )
+
+        Reservation.objects.create(
+            id=1,
+            created_at='2020-04-15',
+            updated_at='2020-04-15',
+            place_id=1,
+            user_id=1
+        )
+
+        Reservation.objects.create(
+            id=2,
+            created_at='2020-04-15',
+            updated_at='2020-04-15',
+            place_id=7,
+            user_id=1
+        )
+
+        Reservation.objects.create(
+            id=4,
+            created_at='2020-04-15',
+            updated_at='2020-04-15',
+            place_id=9,
+            user_id=1
+        )
+
+        Reservation.objects.create(
+            id=10,
+            created_at='2020-04-15',
+            updated_at='2020-04-15',
+            place_id=3,
+            user_id=1
+        )
+
+        Reservation.objects.create(
+            id=12,
+            created_at='2020-04-15',
+            updated_at='2020-04-15',
+            place_id=5,
+            user_id=1
+        )
+
+        Reservation.objects.create(
+            id=17,
+            created_at='2020-04-15',
+            updated_at='2020-04-15',
+            place_id=2,
+            user_id=2
+        )
+
+        Reservation.objects.create(
+            id=22,
+            created_at='2020-04-15',
+            updated_at='2020-04-15',
+            place_id=2,
+            user_id=3
+        )
+
+    def tearDown(self):
+        User.objects.all().delete()
+        PlaceStatus.objects.all().delete()
+        Host.objects.all().delete()
+        Place.objects.all().delete()
+        Reservation.objects.all().delete()
+
+    def test_success_new_place_place_list_with_get_method(self, status='new_place', participant='', sort=''):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        place_list = Place.objects.filter(q)
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_finished_place_place_list_with_get_method(self, status='finished_place', participant='', sort=''):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "finished_place":
+            q &= Q(running_date__lte=datetime.now())
+
+        place_list = Place.objects.filter(q)
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_every_place_place_list_with_get_method(self, status      = 'new_place',
+                                                                                participant = 'every_place',
+                                                                                sort        = ''):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "every_place":
+            pass
+
+        place_list = Place.objects.filter(q)
+
+        self.assertEqual(response.json(), {
+                                'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_full_visitor_place_list_with_get_method(self, status      = 'new_place',
+                                                                                 participant = 'full_visitor',
+                                                                                 sort        = ''):
+        client   = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "full_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                                      .filter(q, count__gte=F('max_visitor'))
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_less_visitor_place_list_with_get_method(self, status      = 'new_place',
+                                                                                 participant = 'less_visitor',
+                                                                                 sort        = ''):
+        client   = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "less_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                                      .filter(q, count__lt=F('max_visitor'))
 
         User.objects.create(
             id=2,
@@ -737,3 +1160,590 @@ class PlaceSearchTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_deadline_place_list_with_get_method(self, status      = 'new_place',
+                                                                             participant = '',
+                                                                             sort        = 'deadline'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "deadline":
+            place_list = place_list.order_by('running_date')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_permitted_place_list_with_get_method(self, status      = 'new_place',
+                                                                              participant = '',
+                                                                              sort        = 'permitted'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "permitted":
+            place_list = place_list.order_by('-created_at')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_low_price_place_list_with_get_method(self, status      = 'new_place',
+                                                                              participant = '',
+                                                                              sort        = 'low_price'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "low_price":
+            place_list = place_list.order_by('price')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_high_price_place_list_with_get_method(self, status      = 'new_place',
+                                                                               participant = '',
+                                                                               sort        = 'high_price'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "high_price":
+            place_list = place_list.order_by('-price')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_every_place_and_deadline_place_list_with_get_method(self, status = 'new_place',
+                                                                                       participant  = 'every_place',
+                                                                                       sort         = 'deadline'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "every_place":
+            pass
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "deadline":
+            place_list = place_list.order_by('running_date')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_every_place_and_permitted_place_list_with_get_method(self, status = 'new_place',
+                                                                                        participant  = 'every_place',
+                                                                                        sort         ='permitted'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "every_place":
+            pass
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "permitted":
+            place_list = place_list.order_by('-created_at')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_every_place_and_low_price_place_list_with_get_method(self, status = 'new_place',
+                                                                                        participant  = 'every_place',
+                                                                                        sort         ='low_price'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "every_place":
+            pass
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "low_price":
+            place_list = place_list.order_by('price')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_every_place_and_high_price_place_list_with_get_method(self, status = 'new_place',
+                                                                                         participant  = 'every_place',
+                                                                                         sort         = 'high_price'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "every_place":
+            pass
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "high_price":
+            place_list = place_list.order_by('-price')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_full_visitor_and_deadline_place_list_with_get_method(self, status = 'new_place',
+                                                                                        participant  = 'full_visitor',
+                                                                                        sort         = 'deadline'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "full_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                .filter(q, count__gte=F('max_visitor'))
+
+        if sort == "deadline":
+            place_list = place_list.order_by('running_date')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_full_visitor_and_permitted_place_list_with_get_method(self, status = 'new_place',
+                                                                                         participant  = 'full_visitor',
+                                                                                         sort         = 'permitted'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "full_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                .filter(q, count__gte=F('max_visitor'))
+
+        if sort == "permitted":
+            place_list = place_list.order_by('-created_at')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_full_visitor_and_low_price_place_list_with_get_method(self, status = 'new_place',
+                                                                                         participant  = 'full_visitor',
+                                                                                         sort         = 'low_price'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "full_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                .filter(q, count__gte=F('max_visitor'))
+
+        if sort == "low_price":
+            place_list = place_list.order_by('price')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_full_visitor_and_high_price_place_list_with_get_method(self, status = 'new_place',
+                                                                                         participant   = 'full_visitor',
+                                                                                         sort          = 'high_price'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "full_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                .filter(q, count__gte=F('max_visitor'))
+
+        if sort == "high_price":
+            place_list = place_list.order_by('-price')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_less_visitor_and_deadline_place_list_with_get_method(self, status = 'new_place',
+                                                                                        participant  = 'less_visitor',
+                                                                                        sort         = 'deadline'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "less_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                .filter(q, count__lt=F('max_visitor'))
+
+        if sort == "deadline":
+            place_list = place_list.order_by('running_date')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_less_visitor_and_permitted_place_list_with_get_method(self, status = 'new_place',
+                                                                                        participant   = 'less_visitor',
+                                                                                        sort          = 'permitted'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "less_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                .filter(q, count__lt=F('max_visitor'))
+
+        if sort == "permitted":
+            place_list = place_list.order_by('-created_at')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_less_visitor_and_low_price_place_list_with_get_method(self, status = 'new_place',
+                                                                                        participant   = 'less_visitor',
+                                                                                        sort          = 'low_price'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "less_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                .filter(q, count__lt=F('max_visitor'))
+
+        if sort == "low_price":
+            place_list = place_list.order_by('price')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_new_place_and_less_visitor_and_low_high_place_list_with_get_method(self, status = 'new_place',
+                                                                                        participant  = 'less_visitor',
+                                                                                        sort         = 'high_price'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "less_visitor":
+            place_list = Place.objects.annotate(count=Count("reservation__id")) \
+                .filter(q, count__lt=F('max_visitor'))
+
+        if sort == "high_price":
+            place_list = place_list.order_by('-price')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_success_deadline_place_list_with_get_method(self, status = '', participant = '',
+                                                               sort = 'deadline'):
+        client = Client()
+        response = client.get(f'/places/placelist?status={status}&participant={participant}&sort={sort}')
+
+        q = Q()
+
+        if status == "new_place":
+            q &= Q(running_date__gt=datetime.now())
+
+        if participant == "every_place":
+            pass
+
+        place_list = Place.objects.filter(q)
+
+        if sort == "deadline":
+            place_list = place_list.order_by('running_date')
+
+        self.assertEqual(response.json(), {
+                                    'result': [{
+                                    'id'          : place.id,
+                                    'img_url'     : place.image_url,
+                                    'max_visitor' : place.max_visitor,
+                                    'title'       : place.title,
+                                    'subtitle'    : place.subtitle,
+                                    'location'    : place.location,
+                                    'running_date': place.running_date.strftime("%Y-%m-%d"),
+                                    'price'       : str(place.price)
+                                } for place in place_list]
+                            }
+                        )

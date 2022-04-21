@@ -1,9 +1,11 @@
 import json
 
+import json
+
 from django.views import View
 from django.http import JsonResponse
 from datetime import datetime
-from django.db.models import Q
+from django.db.models import Q, F, Count
 
 
 from places.models import Place, Review, Reservation
@@ -157,6 +159,7 @@ class HostResistPlaceList(View):
         except AttributeError:
             return JsonResponse({'message': 'None host'}, status=403)
 
+
 class PlaceReservation(View):
     @login_authorization
     def post(self, request):
@@ -185,3 +188,52 @@ class PlaceReservation(View):
 
         except KeyError:
             return JsonResponse({'message': 'Key error'}, status=400)
+
+
+class PlaceListView(View):
+    def get(self, request):
+        try:
+            status      = request.GET.get('status', 'new_place')
+            participant = request.GET.get('participant', 'every_place')
+            sort        = request.GET.get('sort', 'running_date')
+
+            q = Q()
+
+            if status == "new_place":
+                q &= Q(running_date__gt=datetime.now())
+
+            if status == "finished_place":
+                q &= Q(running_date__lte=datetime.now())
+
+            place_list = Place.objects.filter(q).order_by(sort)
+
+            if participant == "full_visitor":
+                place_list = place_list.annotate(count=Count("reservation__id")).filter(count__gte=F('max_visitor'))\
+                                                                                .order_by(sort)
+
+            elif participant == "less_visitor":
+                place_list = place_list.annotate(count=Count("reservation__id")).filter(count__lt=F('max_visitor')
+                                                                                .order_by(sort))
+
+            else:
+                pass
+
+            result = [{
+                'id'           : place.id,
+                'img_url'      : place.image_url,
+                'max_visitor'  : place.max_visitor,
+                'title'        : place.title,
+                'subtitle'     : place.subtitle,
+                'location'     : place.location,
+                'running_date' : place.running_date,
+                'price'        : place.price
+            } for place in place_list]
+
+            return JsonResponse({'result': result}, status=200)
+
+        except KeyError:
+            return JsonResponse({'message': 'Key error'}, status=400)
+
+        except TypeError:
+            return JsonResponse({'message': 'Type error'}, status=400)
+
