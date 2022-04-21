@@ -1,8 +1,11 @@
+import jwt
+
 from django.test import TestCase, Client
 from datetime import datetime
 
 from places.models import Place, PlaceStatus, Review
 from users.models import User, Host
+from withme import settings
 
 
 class PlaceInformationTest(TestCase):
@@ -44,8 +47,6 @@ class PlaceInformationTest(TestCase):
             running_date='2022-04-01',
             location='포항',
             preparation='닌텐도 스위치',
-            latitude     = 36.0076820000,
-            longitude    = 129.3332720000,
             max_visitor=10,
             image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/andrew-varnum-uNKyYp616wo-unsplash.jpg',
             close_date='2022-03-25',
@@ -155,7 +156,7 @@ class MainPlaceListTest(TestCase):
             id=2,
             created_at='2022-14-15',
             updated_at='2022-14-15',
-            bank='',
+            bank='다이아',
             account='1111-1111-1111',
             introduction='안녕',
             user_id=1
@@ -582,3 +583,76 @@ class PlaceReviewListTest(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+
+class PlaceHostInformationTest(TestCase):
+    def setUp(self):
+        User.objects.create(
+            id=1,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            nickname='이산',
+            email='dltks@gmail.com',
+            social_id=1,
+            profile_image='asdfasdf1',
+            point=100000.00
+        )
+
+        PlaceStatus.objects.create(
+            id=1,
+            status=False
+        )
+
+        Host.objects.create(
+            id=1,
+            created_at='2022-14-15',
+            updated_at='2022-14-15',
+            bank='다이아',
+            account='1111-1111-1111',
+            introduction='안녕',
+            user_id=1
+        )
+
+        Place.objects.create(
+            id=1,
+            created_at='2022-04-15',
+            updated_at='2022-04-15',
+            title='로컨 에너테인먼트의 모든것',
+            subtitle='집에서 만끽하는 편안함',
+            price=25000.00,
+            running_time=2,
+            running_date='2022-04-01',
+            location='포항',
+            preparation='닌텐도 스위치',
+            max_visitor=10,
+            image_url='https://wecode-withme.s3.ap-northeast-2.amazonaws.com/images/andrew-varnum-uNKyYp616wo-unsplash.jpg',
+            close_date='2022-03-25',
+            latitude=1,
+            longitude=1,
+            host_id=1,
+            status_id=1
+        )
+
+    def tearDown(self):
+        User.objects.all().delete()
+        PlaceStatus.objects.all().delete()
+        Host.objects.all().delete()
+        Place.objects.all().delete()
+
+    def test_success_place_Host_information_with_get_method(self):
+        user = User.objects.get(id=1)
+        token = jwt.encode({'user_id': user.id}, settings.SECRET_KEY, settings.ALGORITHM)
+        headers = {'HTTP_Authorization': token}
+        client   = Client()
+        response = client.get(f'/places/placehostinformation', **headers)
+
+        host = Host.objects.select_related('user').get(user_id=user.id)
+
+        self.assertEqual(response.json(), {
+                        'result': {
+                            'host_nickname'      : host.user.nickname,
+                            'host_profile_image' : host.user.profile_image,
+                            'host_introduction'  : host.introduction
+                        }
+                    }
+                )
+        self.assertEqual(response.status_code, 200)
