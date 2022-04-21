@@ -5,6 +5,8 @@ from django.db.models import Q
 
 
 from places.models import Place, Review
+from users.models import Host
+from cores.decorator import login_authorization
 
 
 class PlaceInformationView(View):
@@ -122,3 +124,31 @@ class PlaceSearchView(View):
             'price'    : place.price
         }for place in places]
         return JsonResponse({'result': result}, status=200)
+
+
+class HostResistPlaceList(View):
+    @login_authorization
+    def get(sef, request):
+        try:
+            user = request.user
+            host = Host.objects.get(user_id=user.id)
+
+            if not host:
+                return JsonResponse({'message': 'You\'are not host'}, status=401)
+
+            places = Place.objects.filter(host_id=host.id)
+
+            hostplace = [{
+                "id"           : place.id,
+                "title"        : place.title,
+                "subtitle"     : place.subtitle,
+                "img_url"      : place.image_url,
+                "location"     : place.location,
+                "closed_date"  : place.close_date,
+                "running_date" : place.running_date if place.running_date.strftime("%Y-%m-%d") >= datetime.now()
+                                                                         .strftime("%Y-%m-%d") else "is_closed",
+            } for place in places]
+            return JsonResponse({'results': hostplace}, status=200)
+
+        except AttributeError:
+            return JsonResponse({'message': 'None host'}, status=403)
