@@ -1,7 +1,5 @@
 import json
 
-import json
-
 from django.views import View
 from django.http import JsonResponse
 from datetime import datetime
@@ -208,12 +206,10 @@ class PlaceListView(View):
             place_list = Place.objects.filter(q).order_by(sort)
 
             if participant == "full_visitor":
-                place_list = place_list.annotate(count=Count("reservation__id")).filter(count__gte=F('max_visitor'))\
-                                                                                .order_by(sort)
+                place_list = place_list.annotate(count=Count("reservation__id")).filter(count__gte=F('max_visitor')).order_by(sort)
 
             elif participant == "less_visitor":
-                place_list = place_list.annotate(count=Count("reservation__id")).filter(count__lt=F('max_visitor')
-                                                                                .order_by(sort))
+                place_list = place_list.annotate(count=Count("reservation__id")).filter(count__lt=F('max_visitor')).order_by(sort)
 
             else:
                 pass
