@@ -6,7 +6,7 @@
 
 <h2>초기기획 & ERD</h2>
 <h3>ERD</h3>
-<image src=https://files.slack.com/files-pri/TH0U6FBTN-F03CF24R7LL/image.png/>
+![image](https://user-images.githubusercontent.com/86543366/164616537-0c216ef3-5bcd-466a-90e9-81850cb46cac.png)
 
 <h3>User flow</h3>
 메인페이지 > 회원가입/로그인(카카오톡 소셜 로그인) > 마이페이지 포인트 충전 > 카테고리 및 상품 리스트 > 검색 > 상세페이지 > 상품 예약 > 예약 확인 및 환불
@@ -52,20 +52,5 @@ python, django, mysql, AWS, JWT, Bcrypt, s3, boto3
 
 <img width="1061" alt="스크린샷 2022-04-22 오후 2 55 01" src="https://user-images.githubusercontent.com/86543366/164612285-3e575c49-8750-4e38-bef1-41ea52ef5369.png">
 
-1. USERS</br>
-    1) 회원가입 POST :8000/users/signup  :정규식을 이용한 유효성 검사, bcrypt를 패스워드 암호화</br>
-    2) 로그인 POST :8000/users/signin  : bcrypt를 이용한 암호체크, jwt를 이용한 토큰 발행</br>
-    
-2. Carts</br>
-    1) 장바구니 담기 POST :8000/carts.   :get_or_created를 이용한 장바구니 등록</br>
-    2) 장바구니 불러오기 GET :8000/carts
-    3) 장바구니 수량 업데이트 PATCH :8000/carts/{cart_id} :Path parameter를 이용하여 해당 장바구니의 수량 수정 </br>
-    4) 장바구니 삭제 DELETE :8000/carts?id={cart_id}&id={cart_id} :Query parameter를 이용하여 해당하는 장바구니들을 선택 삭제 </br>
-  
-3. Products</br>
-GET 요청에 의한 정보 호출, Q객체 를 이용한 다중 필터 검색, end_point 따라서 다른 정보 호출 </br>
-    1) products/   => 카테고리별 상품 목록 호출</br>
-    2) products/<int:products_id> => 제품 상세보기</br>
-    3) products/smart(qs) => Query String 에 의한 필터</br>
-
 <h2>시연 영상</h2>
+링크: 
