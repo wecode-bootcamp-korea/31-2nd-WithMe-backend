@@ -6,7 +6,7 @@
 
 <h2>초기기획 & ERD</h2>
 <h3>ERD</h3>
-<image>(https://user-images.githubusercontent.com/86543366/164616537-0c216ef3-5bcd-466a-90e9-81850cb46cac.png)
+<image> https://user-images.githubusercontent.com/86543366/164616537-0c216ef3-5bcd-466a-90e9-81850cb46cac.png
 
 <h3>User flow</h3>
 메인페이지 > 회원가입/로그인(카카오톡 소셜 로그인) > 마이페이지 포인트 충전 > 카테고리 및 상품 리스트 > 검색 > 상세페이지 > 상품 예약 > 예약 확인 및 환불
