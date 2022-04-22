@@ -48,6 +48,9 @@ python, django, mysql, AWS, JWT, Bcrypt, s3, boto3
 엔드포인트별 기능 정의</br>
 포스트맨을 이용하여 엔드포인트 정의 및 공유
 링크: https://warped-water-28282.postman.co/workspace/With-Me~7ec92774-1f84-442d-bc4a-3acc5cc318b8/request/20075057-553f39ef-dab5-4deb-a9c4-1d0dd536a7c8
+
+<img width="1061" alt="스크린샷 2022-04-22 오후 2 55 01" src="https://user-images.githubusercontent.com/86543366/164612285-3e575c49-8750-4e38-bef1-41ea52ef5369.png">
+
 1. USERS</br>
     1) 회원가입 POST :8000/users/signup  :정규식을 이용한 유효성 검사, bcrypt를 패스워드 암호화</br>
     2) 로그인 POST :8000/users/signin  : bcrypt를 이용한 암호체크, jwt를 이용한 토큰 발행</br>
